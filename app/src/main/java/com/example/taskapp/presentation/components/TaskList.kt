@@ -10,11 +10,11 @@ import androidx.compose.ui.unit.dp
 import com.example.taskapp.domain.model.Task
 
 @Composable
-fun TaskList(tasks: List<Task>,
+fun TaskList(modifier: Modifier = Modifier,
+             tasks: List<Task>,
              onTaskChecked: (Task, Boolean) -> Unit,
              onTaskDeleted: (Task) -> Unit,
-             onTaskClick: (Long) -> Unit,
-             modifier: Modifier = Modifier,
+             onTaskClick: (Long) -> Unit
 ){
     LazyColumn(
         modifier = modifier,

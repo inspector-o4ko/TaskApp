@@ -25,11 +25,11 @@ import com.example.taskapp.domain.model.Task
 
 @Composable
 fun TaskItem(
+    modifier: Modifier = Modifier,
     task: Task,
     onCheckedChange: (Boolean) -> Unit,
     onTaskDeleted: () -> Unit,
-    onTaskClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onTaskClick: () -> Unit
 ) {
     val alpha by animateFloatAsState(
         targetValue = if (task.isCompleted) 0.5f else 1f,
@@ -41,7 +41,7 @@ fun TaskItem(
         modifier = modifier
             .fillMaxWidth()
             .graphicsLayer { this.alpha = alpha },
-        shape = RoundedCornerShape(16.dp)
+        shape = MaterialTheme.shapes.medium
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
