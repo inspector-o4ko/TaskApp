@@ -126,9 +126,9 @@ fun AppNavigation() {
 
         composable(Routes.ADD) { backStackEntry ->
             AddTaskScreen(
-                onTaskSave = { text ->
+                onTaskSave = { text, description ->
                     if (backStackEntry.isResumed()) {
-                        viewModel.addTask(text)
+                        viewModel.addTask(title = text, description = description)
                         navController.popBackStack()
                     }
                 },

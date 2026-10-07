@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [TaskEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class TaskDatabase : RoomDatabase() {
@@ -16,10 +16,7 @@ abstract class TaskDatabase : RoomDatabase() {
 }
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
-
-    override fun migrate(
-        database: SupportSQLiteDatabase
-    ) {
+    override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL(
             """
             ALTER TABLE TaskEntity
@@ -30,15 +27,20 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
 }
 
 val MIGRATION_2_3 = object : Migration(2, 3) {
-
-    override fun migrate(
-        database: SupportSQLiteDatabase
-    ) {
+    override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL(
             """
             ALTER TABLE TaskEntity
             ADD COLUMN priority INTEGER NOT NULL DEFAULT 0
             """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            "UPDATE TaskEntity SET description = '' WHERE description = 'empty'"
         )
     }
 }

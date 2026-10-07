@@ -34,12 +34,13 @@ class TaskViewModel @Inject constructor(
             initialValue = TaskUiState.Loading
         )
 
-    fun addTask(title: String){
+    fun addTask(title: String, description: String){
         viewModelScope.launch {
             repository.addTask(
                 Task(
                     id = 0,
-                    title = title
+                    title = title,
+                    description = description
                 )
             )
         }

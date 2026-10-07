@@ -2,9 +2,11 @@ package com.example.taskapp.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -25,24 +27,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.input.ImeAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
-    onTaskSave: (String) -> Unit,
+    onTaskSave: (String, String) -> Unit,
     onTaskBack: () -> Unit
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
     var isSaving by rememberSaveable { mutableStateOf(false) }
     val save = {
-        if (text.isNotBlank() && !isSaving) {
+        if (title.isNotBlank() && !isSaving) {
             isSaving = true
-            onTaskSave(text.trim())
+            onTaskSave(title.trim(), description.trim())
         }
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = { Text("New Task") },
@@ -57,9 +68,7 @@ fun AddTaskScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = save
-            ) {
+            FloatingActionButton(onClick = save) {
                 Icon(Icons.Default.Check, contentDescription = "Save")
             }
         }
@@ -68,16 +77,30 @@ fun AddTaskScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 96.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            TextField(
+            OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = text,
-                onValueChange = { text = it },
+                value = title,
+                onValueChange = { title = it },
                 label = { Text("Title") },
-                singleLine = true
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                textStyle = MaterialTheme.typography.titleMedium,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            )
+
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                placeholder = { Text("Add details (optional)") },
+                shape = MaterialTheme.shapes.medium,
+                minLines = 6,
+                maxLines = 12
             )
         }
     }
