@@ -84,54 +84,17 @@ fun AppNavigation() {
         }
 
         composable(Routes.EDIT) { backStackEntry ->
-            val editViewModel: EditTaskViewModel = hiltViewModel()
-            val task by editViewModel.task.collectAsStateWithLifecycle()
-
-            when (val state = uiState) {
-
-                TaskUiState.Loading -> {
-                    Box(Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+            EditTaskScreen(
+                onBack = {
+                    if (backStackEntry.isResumed()) {
+                        navController.popBackStack()
                     }
                 }
-
-                is TaskUiState.Success -> {
-                    if (task != null) {
-                        EditTaskScreen(
-                            task = task!!,
-                            onSave = { updatedTask ->
-                                if (backStackEntry.isResumed()) {
-                                    editViewModel.updateTask(updatedTask)
-                                    navController.popBackStack()
-                                }
-                            },
-                            onBack = {
-                                if (backStackEntry.isResumed()) {
-                                    navController.popBackStack()
-                                }
-                            }
-                        )
-                    } else {
-                        Text("Task not found")
-                    }
-                }
-
-                is TaskUiState.Error -> {
-                    Text(text = state.message)
-                }
-            }
+            )
         }
 
         composable(Routes.ADD) { backStackEntry ->
             AddTaskScreen(
-                onTaskSave = { text, description ->
-                    if (backStackEntry.isResumed()) {
-                        viewModel.addTask(title = text, description = description)
-                        navController.popBackStack()
-                    }
-                },
                 onTaskBack = {
                     if (backStackEntry.isResumed()) {
                         navController.popBackStack()

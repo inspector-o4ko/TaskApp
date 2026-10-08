@@ -19,7 +19,7 @@ class TaskRepository @Inject constructor(
                 }
             }
     }
-    fun getTask(taskId: Int): Flow<Task?>{
+    fun getTask(taskId: Long): Flow<Task?>{
         return dao.getTaskById(taskId)
             .map { entity ->
                 entity?.toTask()
