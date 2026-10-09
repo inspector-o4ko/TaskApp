@@ -5,10 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskapp.data.repository.TaskRepository
 import com.example.taskapp.domain.model.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,34 +21,35 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository
 ) : ViewModel(){
-    val uiState: StateFlow<TaskUiState> = repository.getTasks()
-        .map<List<Task>, TaskUiState> { tasks ->
-            TaskUiState.Success(tasks)
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    val uiState: StateFlow<TaskUiState> = combine<List<Task>, String, TaskUiState>(
+        repository.getTasks(),
+        searchQuery
+    ) { tasks, query ->
+        val q = query.trim()
+        val filteredTasks = if (q.isEmpty()) {
+            tasks
+        } else {
+            tasks.filter { task ->
+                task.title.contains(q, ignoreCase = true) ||
+                        task.description.contains(q, ignoreCase = true)
+            }
         }
-        .catch { error ->
-            emit(
-                TaskUiState.Error(
-                    error.message ?: "Unknown error"
-                )
-            )
+        TaskUiState.Success(filteredTasks)
+    }   .catch { error ->
+            emit(TaskUiState.Error(error.message ?: "Unknown error"))
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = TaskUiState.Loading
         )
-
-    fun addTask(title: String, description: String){
-        viewModelScope.launch {
-            repository.addTask(
-                Task(
-                    id = 0,
-                    title = title,
-                    description = description
-                )
-            )
-        }
-    }
 
     fun deleteTask(task: Task){
         viewModelScope.launch {

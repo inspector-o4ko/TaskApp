@@ -35,52 +35,38 @@ fun AppNavigation() {
     val viewModel: TaskViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+
     NavHost(
         navController = navController,
         startDestination = Routes.TASKS
     ) {
 
         composable(Routes.TASKS) { backStackEntry ->
-            when (val state = uiState) {
-
-                TaskUiState.Loading -> {
-                    Box(Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+            TaskListScreen(
+                uiState = uiState,
+                searchQuery = searchQuery,
+                onSearchQueryChange = viewModel::updateSearchQuery,
+                onTaskClick = { taskId ->
+                    if (backStackEntry.isResumed()) {
+                        navController.navigate(Routes.edit(taskId)) {
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                onTaskChecked = { task, isChecked ->
+                    viewModel.checkTask(task, isChecked)
+                },
+                onTaskDeleted = { task ->
+                    viewModel.deleteTask(task)
+                },
+                onAddTask = {
+                    if (backStackEntry.isResumed()) {
+                        viewModel.updateSearchQuery("")
+                        navController.navigate(Routes.ADD) { launchSingleTop = true }
                     }
                 }
-
-                is TaskUiState.Success -> {
-                    TaskListScreen(
-                        tasks = state.tasks,
-                        onTaskClick = { taskId ->
-                            if (backStackEntry.isResumed()) {
-                                navController.navigate(Routes.edit(taskId)) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        },
-                        onTaskChecked = { task, isChecked ->
-                            viewModel.checkTask(task, isChecked)
-                        },
-                        onTaskDeleted = { task ->
-                            viewModel.deleteTask(task)
-                        },
-                        onAddTask = {
-                            if (backStackEntry.isResumed()) {
-                                navController.navigate(Routes.ADD) {
-                                    launchSingleTop = true
-                                }
-                            }
-                        }
-                    )
-                }
-
-                is TaskUiState.Error -> {
-                    Text(text = state.message)
-                }
-            }
+            )
         }
 
         composable(Routes.EDIT) { backStackEntry ->
