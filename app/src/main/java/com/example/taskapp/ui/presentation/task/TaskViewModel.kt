@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskapp.data.repository.TaskRepository
 import com.example.taskapp.domain.model.Task
+import com.example.taskapp.ui.presentation.task.TaskFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.List
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
@@ -28,22 +30,47 @@ class TaskViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    val uiState: StateFlow<TaskUiState> = combine<List<Task>, String, TaskUiState>(
+    private val _taskFilter = MutableStateFlow(TaskFilter.ALL)
+    val taskFilter = _taskFilter.asStateFlow()
+    fun updateTaskFilter(filter: TaskFilter){
+        _taskFilter.value = filter
+    }
+
+
+    val uiState: StateFlow<TaskUiState> = combine<List<Task>, String, TaskFilter, TaskUiState>(
         repository.getTasks(),
-        searchQuery
-    ) { tasks, query ->
+        searchQuery,
+        taskFilter
+    ) { tasks, query, filter ->
+
         val q = query.trim()
-        val filteredTasks = if (q.isEmpty()) {
-            tasks
-        } else {
-            tasks.filter { task ->
-                task.title.contains(q, ignoreCase = true) ||
-                        task.description.contains(q, ignoreCase = true)
+
+        val searchedTasks = tasks.filter { task ->
+            q.isEmpty() ||
+                    task.title.contains(q, ignoreCase = true) ||
+                    task.description.contains(q, ignoreCase = true)
+        }
+
+        val filteredTasks = when (filter) {
+            TaskFilter.ALL -> searchedTasks
+
+            TaskFilter.ACTIVE -> searchedTasks.filter { task ->
+                !task.isCompleted
+            }
+
+            TaskFilter.COMPLETED -> searchedTasks.filter { task ->
+                task.isCompleted
             }
         }
+
         TaskUiState.Success(filteredTasks)
-    }   .catch { error ->
-            emit(TaskUiState.Error(error.message ?: "Unknown error"))
+    }
+        .catch { error ->
+            emit(
+                TaskUiState.Error(
+                    error.message ?: "Unknown error"
+                )
+            )
         }
         .stateIn(
             scope = viewModelScope,

@@ -36,6 +36,7 @@ fun AppNavigation() {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val taskFilter by viewModel.taskFilter.collectAsStateWithLifecycle()
 
     NavHost(
         navController = navController,
@@ -47,6 +48,8 @@ fun AppNavigation() {
                 uiState = uiState,
                 searchQuery = searchQuery,
                 onSearchQueryChange = viewModel::updateSearchQuery,
+                taskFilter = taskFilter,
+                onTaskFilterChange = viewModel::updateTaskFilter,
                 onTaskClick = { taskId ->
                     if (backStackEntry.isResumed()) {
                         navController.navigate(Routes.edit(taskId)) {

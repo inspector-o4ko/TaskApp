@@ -1,7 +1,9 @@
 package com.example.taskapp.presentation.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.example.taskapp.presentation.task.TaskUiState
 import com.example.taskapp.ui.presentation.components.DeleteTaskDialog
 import com.example.taskapp.ui.presentation.components.EmptyTasksContent
+import com.example.taskapp.ui.presentation.task.TaskFilter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +46,8 @@ fun TaskListScreen(
     uiState: TaskUiState,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    taskFilter: TaskFilter,
+    onTaskFilterChange: (TaskFilter) -> Unit,
     onTaskClick: (Long) -> Unit,
     onTaskChecked: (Task, Boolean) -> Unit,
     onTaskDeleted: (Task) -> Unit,
@@ -86,6 +92,36 @@ fun TaskListScreen(
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = taskFilter == TaskFilter.ALL,
+                    onClick = {
+                        onTaskFilterChange(TaskFilter.ALL)
+                    },
+                    label = { Text("All") }
+                )
+
+                FilterChip(
+                    selected = taskFilter == TaskFilter.ACTIVE,
+                    onClick = {
+                        onTaskFilterChange(TaskFilter.ACTIVE)
+                    },
+                    label = { Text("Active") }
+                )
+
+                FilterChip(
+                    selected = taskFilter == TaskFilter.COMPLETED,
+                    onClick = {
+                        onTaskFilterChange(TaskFilter.COMPLETED)
+                    },
+                    label = { Text("Completed") }
+                )
+            }
 
             Box(
                 modifier = Modifier
@@ -111,7 +147,8 @@ fun TaskListScreen(
                                 onTaskClick = onTaskClick
                             )
 
-                            searchQuery.isNotBlank() -> Text(
+                            searchQuery.isNotBlank() ||
+                                    taskFilter != TaskFilter.ALL -> Text(
                                 text = "Nothing found",
                                 style = MaterialTheme.typography.bodyLarge
                             )
