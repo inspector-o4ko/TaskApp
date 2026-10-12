@@ -2,6 +2,7 @@ package com.example.taskapp.data.mapper
 
 import com.example.taskapp.domain.model.Task
 import com.example.taskapp.data.local.TaskEntity
+import com.example.taskapp.domain.model.TaskPriority
 
 fun TaskEntity.toTask(): Task {
     return Task(
@@ -9,7 +10,7 @@ fun TaskEntity.toTask(): Task {
         title = title,
         isCompleted = isCompleted,
         description = description,
-        priority = priority
+        priority = TaskPriority.fromValue(priority)
     )
 }
 
@@ -19,6 +20,6 @@ fun Task.toEntity(): TaskEntity {
         title = title,
         isCompleted = isCompleted,
         description = description,
-        priority = priority
+        priority = priority.value
     )
 }

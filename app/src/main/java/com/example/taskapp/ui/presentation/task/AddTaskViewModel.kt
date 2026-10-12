@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskapp.data.repository.TaskRepository
 import com.example.taskapp.domain.model.Task
+import com.example.taskapp.domain.model.TaskPriority
 import com.example.taskapp.presentation.form.TaskFormState
 import com.example.taskapp.presentation.task.event.AddTaskEvent
 import com.example.taskapp.presentation.task.state.AddTaskUiState
@@ -59,6 +60,9 @@ class AddTaskViewModel @Inject constructor(
         }
     }
 
+    fun onPriorityChange(priority: TaskPriority) {
+        _uiState.update { it.copy(form = it.form.copy(priority = priority)) }
+    }
 
     fun save() {
         if (_uiState.value.isSaving) return
@@ -77,7 +81,8 @@ class AddTaskViewModel @Inject constructor(
                     Task(
                         id = 0,
                         title = form.title.trim(),
-                        description = form.description.trim()
+                        description = form.description.trim(),
+                        priority = form.priority
                     )
                 )
 

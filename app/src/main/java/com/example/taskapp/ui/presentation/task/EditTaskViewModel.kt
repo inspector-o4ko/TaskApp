@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskapp.data.repository.TaskRepository
 import com.example.taskapp.domain.model.Task
+import com.example.taskapp.domain.model.TaskPriority
 import com.example.taskapp.presentation.form.TaskFormState
 import com.example.taskapp.ui.presentation.task.event.EditTaskEvent
 import com.example.taskapp.ui.presentation.task.state.EditTaskUiState
@@ -41,6 +42,7 @@ class EditTaskViewModel @Inject constructor(
 
     val events = _events.asSharedFlow()
 
+    private var loadedTask: Task? = null
 
     init {
         loadTask()
@@ -49,13 +51,14 @@ class EditTaskViewModel @Inject constructor(
     private fun loadTask() {
         viewModelScope.launch {
             val task = repository.getTask(taskId).first()
-
             if (task != null) {
+                loadedTask = task
                 _uiState.update {
                     it.copy(
                         form = TaskFormState(
                             title = task.title,
-                            description = task.description
+                            description = task.description,
+                            priority = task.priority
                         ),
                         isLoading = false
                     )
@@ -64,6 +67,10 @@ class EditTaskViewModel @Inject constructor(
                 _events.emit(EditTaskEvent.Error("Task not found"))
             }
         }
+    }
+
+    fun onPriorityChange(priority: TaskPriority) {
+        _uiState.update { it.copy(form = it.form.copy(priority = priority)) }
     }
 
     fun onTitleChange(title: String) {
@@ -98,13 +105,15 @@ class EditTaskViewModel @Inject constructor(
             it.copy(isSaving = true)
         }
 
+        val original = loadedTask ?: return
+
         viewModelScope.launch {
             try {
                 repository.updateTask(
-                    Task(
-                        id = taskId,
+                    original.copy(
                         title = state.form.title.trim(),
-                        description = state.form.description.trim()
+                        description = state.form.description.trim(),
+                        priority = state.form.priority
                     )
                 )
 

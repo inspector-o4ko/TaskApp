@@ -5,5 +5,5 @@ data class Task(
     val title: String,
     val isCompleted: Boolean = false,
     val description: String = "",
-    val priority: Int = 0
+    val priority: TaskPriority = TaskPriority.LOW
 )

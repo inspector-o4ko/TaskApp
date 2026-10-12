@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">TaskApp</string>
+    <string name="filters">Filters</string>
+    <string name="filters_with_count">Filters (%1$d)</string>
+    <string name="collapse_filters">Collapse filters</string>
+    <string name="expand_filters">Expand filters</string>
+    <string name="reset">Reset</string>
+    <string name="any">Any</string>
+    <string name="priority">Priority</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
 </resources>

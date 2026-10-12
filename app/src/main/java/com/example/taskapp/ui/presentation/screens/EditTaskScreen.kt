@@ -121,22 +121,12 @@ fun EditTaskScreen(
             else -> {
                 TaskForm(
                     state = state.form,
-
-                    onTitleChange =
-                        viewModel::onTitleChange,
-
-                    onDescriptionChange =
-                        viewModel::onDescriptionChange,
-
+                    onTitleChange = viewModel::onTitleChange,
+                    onDescriptionChange = viewModel::onDescriptionChange,
+                    onPriorityChange = viewModel::onPriorityChange,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 24.dp,
-                            bottom = 96.dp
-                        )
                 )
             }
         }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskapp.data.repository.TaskRepository
 import com.example.taskapp.domain.model.Task
+import com.example.taskapp.domain.model.TaskPriority
 import com.example.taskapp.ui.presentation.task.TaskFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,47 +37,50 @@ class TaskViewModel @Inject constructor(
         _taskFilter.value = filter
     }
 
-
-    val uiState: StateFlow<TaskUiState> = combine<List<Task>, String, TaskFilter, TaskUiState>(
-        repository.getTasks(),
-        searchQuery,
-        taskFilter
-    ) { tasks, query, filter ->
-
-        val q = query.trim()
-
-        val searchedTasks = tasks.filter { task ->
-            q.isEmpty() ||
-                    task.title.contains(q, ignoreCase = true) ||
-                    task.description.contains(q, ignoreCase = true)
-        }
-
-        val filteredTasks = when (filter) {
-            TaskFilter.ALL -> searchedTasks
-
-            TaskFilter.ACTIVE -> searchedTasks.filter { task ->
-                !task.isCompleted
-            }
-
-            TaskFilter.COMPLETED -> searchedTasks.filter { task ->
-                task.isCompleted
-            }
-        }
-
-        TaskUiState.Success(filteredTasks)
+    private val _priorityFilter = MutableStateFlow<TaskPriority?>(null)
+    val priorityFilter = _priorityFilter.asStateFlow()
+    fun updatePriorityFilter(priority: TaskPriority?) {
+        _priorityFilter.value = priority
     }
-        .catch { error ->
-            emit(
-                TaskUiState.Error(
-                    error.message ?: "Unknown error"
-                )
-            )
+
+    val uiState: StateFlow<TaskUiState> =
+        combine<List<Task>, String, TaskFilter, TaskPriority?, TaskUiState>(
+            repository.getTasks(),
+            searchQuery,
+            taskFilter,
+            priorityFilter
+        ) { tasks, query, filter, priority ->
+
+            val q = query.trim()
+
+            val searchedTasks = tasks.filter { task ->
+                q.isEmpty() ||
+                        task.title.contains(q, ignoreCase = true) ||
+                        task.description.contains(q, ignoreCase = true)
+            }
+
+            val statusFiltered = when (filter) {
+                TaskFilter.ALL -> searchedTasks
+                TaskFilter.ACTIVE -> searchedTasks.filter { !it.isCompleted }
+                TaskFilter.COMPLETED -> searchedTasks.filter { it.isCompleted }
+            }
+
+            val filteredTasks = if (priority == null) {
+                statusFiltered
+            } else {
+                statusFiltered.filter { it.priority == priority }
+            }
+
+            TaskUiState.Success(filteredTasks)
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = TaskUiState.Loading
-        )
+            .catch { error ->
+                emit(TaskUiState.Error(error.message ?: "Unknown error"))
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = TaskUiState.Loading
+            )
 
     fun deleteTask(task: Task){
         viewModelScope.launch {
