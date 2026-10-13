@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.taskapp.domain.model.Task
@@ -16,8 +18,17 @@ fun TaskList(modifier: Modifier = Modifier,
              onTaskDeleted: (Task) -> Unit,
              onTaskClick: (Long) -> Unit
 ){
+    val listState = rememberLazyListState()
+
+    SideEffect {
+        listState.requestScrollToItem(
+            index = listState.firstVisibleItemIndex,
+            scrollOffset = listState.firstVisibleItemScrollOffset
+        )
+    }
     LazyColumn(
         modifier = modifier,
+        state = listState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
