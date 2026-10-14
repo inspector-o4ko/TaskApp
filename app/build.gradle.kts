@@ -68,4 +68,6 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core")
 
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+
 }

@@ -99,13 +99,13 @@ class EditTaskViewModel @Inject constructor(
 
         val state = _uiState.value
 
+        val original = loadedTask ?: return
+
         if (state.form.title.isBlank()) return
 
         _uiState.update {
             it.copy(isSaving = true)
         }
-
-        val original = loadedTask ?: return
 
         viewModelScope.launch {
             try {

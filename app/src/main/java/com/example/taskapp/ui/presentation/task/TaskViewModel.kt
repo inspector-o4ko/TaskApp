@@ -19,11 +19,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.collections.List
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val repository: TaskRepository
 ) : ViewModel(){
+    private val _operationError = MutableStateFlow<String?>(null)
+    val operationError = _operationError.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
@@ -82,19 +85,29 @@ class TaskViewModel @Inject constructor(
                 initialValue = TaskUiState.Loading
             )
 
-    fun deleteTask(task: Task){
+    private fun runOperation(errorMessage: String, block: suspend () -> Unit) {
         viewModelScope.launch {
-            repository.deleteTask(task)
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _operationError.value = errorMessage
+            }
         }
     }
 
-    fun checkTask(task: Task, isChecked: Boolean){
-        viewModelScope.launch {
-            repository.updateTask(
-                task.copy(
-                    isCompleted = isChecked
-                )
-            )
-        }
+    fun deleteTask(task: Task) = runOperation("failed delete") {
+        repository.deleteTask(task)
     }
+
+    fun checkTask(task: Task, isChecked: Boolean) = runOperation("failed update") {
+        repository.updateTask(task.copy(isCompleted = isChecked))
+    }
+
+    fun clearOperationError() {
+        _operationError.value = null
+    }
+
 }
+

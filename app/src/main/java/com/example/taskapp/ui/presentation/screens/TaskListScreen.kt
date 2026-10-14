@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -113,6 +112,7 @@ fun TaskListScreen(
                 shape = MaterialTheme.shapes.medium
             )
 
+            //Фильтры
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,6 +143,7 @@ fun TaskListScreen(
                 }
             }
 
+            //Фильтры
             AnimatedVisibility(
                 visible = filtersExpanded,
                 enter = expandVertically() + fadeIn(),
