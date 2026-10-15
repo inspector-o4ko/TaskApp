@@ -5,9 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.taskapp.domain.model.AppSettings
 import com.example.taskapp.domain.model.AppTheme
 import com.example.taskapp.domain.model.TaskLayout
-import com.example.taskapp.domain.model.TaskCardSize
 import com.example.taskapp.domain.model.PriorityDisplay
-import com.example.taskapp.domain.model.SettingsRepository
+import com.example.taskapp.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +19,7 @@ class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository
 ) : ViewModel() {
 
-    val settings: StateFlow<AppSettings> =
+    val settings: StateFlow<AppSettings?> =
         repository.settings.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -36,18 +35,6 @@ class SettingsViewModel @Inject constructor(
     fun updateTaskLayout(layout: TaskLayout) {
         viewModelScope.launch {
             repository.updateTaskLayout(layout)
-        }
-    }
-
-    fun updateGridColumns(columns: Int) {
-        viewModelScope.launch {
-            repository.updateGridColumns(columns)
-        }
-    }
-
-    fun updateCardSize(size: TaskCardSize) {
-        viewModelScope.launch {
-            repository.updateCardSize(size)
         }
     }
 

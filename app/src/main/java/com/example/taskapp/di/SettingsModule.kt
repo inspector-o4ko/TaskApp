@@ -5,7 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.example.taskapp.data.preferences.SettingsRepositoryImpl
 import com.example.taskapp.data.preferences.createSettingsDataStore
-import com.example.taskapp.domain.model.SettingsRepository
+import com.example.taskapp.domain.repository.SettingsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.Binds

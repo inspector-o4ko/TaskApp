@@ -1,5 +1,9 @@
-package com.example.taskapp.domain.model
+package com.example.taskapp.domain.repository
 
+import com.example.taskapp.domain.model.AppSettings
+import com.example.taskapp.domain.model.AppTheme
+import com.example.taskapp.domain.model.PriorityDisplay
+import com.example.taskapp.domain.model.TaskLayout
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
@@ -7,8 +11,6 @@ interface SettingsRepository {
 
     suspend fun updateTheme(theme: AppTheme)
     suspend fun updateTaskLayout(layout: TaskLayout)
-    suspend fun updateGridColumns(columns: Int)
-    suspend fun updateCardSize(size: TaskCardSize)
     suspend fun updatePriorityDisplay(display: PriorityDisplay)
     suspend fun updateShowDescription(show: Boolean)
 

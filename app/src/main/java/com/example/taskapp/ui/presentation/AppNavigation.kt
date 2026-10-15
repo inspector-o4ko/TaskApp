@@ -5,27 +5,20 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,8 +35,6 @@ import com.example.taskapp.presentation.screens.AddTaskScreen
 import com.example.taskapp.presentation.screens.EditTaskScreen
 import com.example.taskapp.presentation.navigation.Routes
 import com.example.taskapp.presentation.screens.TaskListScreen
-import com.example.taskapp.presentation.task.EditTaskViewModel
-import com.example.taskapp.presentation.task.TaskUiState
 import com.example.taskapp.presentation.task.TaskViewModel
 import com.example.taskapp.ui.presentation.navigation.BottomTab
 import com.example.taskapp.ui.presentation.screens.AccountScreen
@@ -51,12 +42,13 @@ import com.example.taskapp.ui.presentation.screens.CalendarScreen
 import com.example.taskapp.ui.presentation.screens.SettingsScreen
 import com.example.taskapp.ui.presentation.screens.TaskTrackerScreen
 import com.example.taskapp.ui.presentation.settings.SettingsViewModel
-
+import com.example.taskapp.domain.model.TaskLayout
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private fun NavBackStackEntry.isResumed(): Boolean =
     lifecycle.currentState == Lifecycle.State.RESUMED
 @Composable
-fun AppNavigation() {
+fun AppNavigation(settingsViewModel: SettingsViewModel) {
     val navController = rememberNavController()
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -73,6 +65,8 @@ fun AppNavigation() {
     val showBottomBar = BottomTab.entries.any { tab ->
         currentDestination?.hierarchy?.any { it.route == tab.route } == true
     }
+
+    val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
 
     LaunchedEffect(operationError) {
         operationError?.let { message ->
@@ -133,6 +127,7 @@ fun AppNavigation() {
             composable(Routes.TASKS) { entry ->
                 TaskListScreen(
                     uiState = uiState,
+                    taskLayout = settings!!.taskLayout,
                     searchQuery = searchQuery,
                     onSearchQueryChange = viewModel::updateSearchQuery,
                     taskFilter = taskFilter,
@@ -160,19 +155,16 @@ fun AppNavigation() {
             }
 
             composable(Routes.SETTINGS) {
-                val settingsViewModel: SettingsViewModel = hiltViewModel()
-                val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
-
-                SettingsScreen(
-                    settings = settings,
-                    onThemeChange = settingsViewModel::updateTheme,
-                    onTaskLayoutChange = settingsViewModel::updateTaskLayout,
-                    onGridColumnsChange = settingsViewModel::updateGridColumns,
-                    onCardSizeChange = settingsViewModel::updateCardSize,
-                    onPriorityDisplayChange = settingsViewModel::updatePriorityDisplay,
-                    onShowDescriptionChange = settingsViewModel::updateShowDescription,
-                    onResetSettings = settingsViewModel::resetSettings
-                )
+                settings?.let { loaded ->
+                    SettingsScreen(
+                        settings = loaded,
+                        onThemeChange = settingsViewModel::updateTheme,
+                        onTaskLayoutChange = settingsViewModel::updateTaskLayout,
+                        onPriorityDisplayChange = settingsViewModel::updatePriorityDisplay,
+                        onShowDescriptionChange = settingsViewModel::updateShowDescription,
+                        onResetSettings = settingsViewModel::resetSettings
+                    )
+                }
             }
 
             composable(Routes.EDIT) { entry ->

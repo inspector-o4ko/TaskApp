@@ -49,11 +49,13 @@ import com.example.taskapp.presentation.task.TaskUiState
 import com.example.taskapp.ui.presentation.components.DeleteTaskDialog
 import com.example.taskapp.ui.presentation.components.EmptyTasksContent
 import com.example.taskapp.ui.presentation.task.TaskFilter
+import com.example.taskapp.domain.model.TaskLayout
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
     uiState: TaskUiState,
+    taskLayout: TaskLayout,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     taskFilter: TaskFilter,
@@ -63,7 +65,8 @@ fun TaskListScreen(
     onTaskClick: (Long) -> Unit,
     onTaskChecked: (Task, Boolean) -> Unit,
     onTaskDeleted: (Task) -> Unit,
-    onAddTask: () -> Unit
+    onAddTask: () -> Unit,
+
 ) {
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
@@ -218,9 +221,10 @@ fun TaskListScreen(
                             uiState.tasks.isNotEmpty() -> TaskList(
                                 modifier = Modifier.fillMaxSize(),
                                 tasks = uiState.tasks,
+                                layout = taskLayout,
                                 onTaskChecked = onTaskChecked,
                                 onTaskDeleted = { taskToDelete = it },
-                                onTaskClick = onTaskClick
+                                onTaskClick = onTaskClick,
                             )
 
                             searchQuery.isNotBlank() ||

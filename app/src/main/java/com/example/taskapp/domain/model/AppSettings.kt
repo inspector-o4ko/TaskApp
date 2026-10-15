@@ -11,12 +11,6 @@ enum class TaskLayout {
     GRID
 }
 
-enum class TaskCardSize {
-    COMPACT,
-    STANDARD,
-    LARGE
-}
-
 enum class PriorityDisplay {
     HIDDEN,
     COLOR_STRIP,
@@ -27,8 +21,6 @@ enum class PriorityDisplay {
 data class AppSettings(
     val theme: AppTheme = AppTheme.SYSTEM,
     val taskLayout: TaskLayout = TaskLayout.LIST,
-    val gridColumns: Int = 2,
-    val cardSize: TaskCardSize = TaskCardSize.STANDARD,
     val priorityDisplay: PriorityDisplay = PriorityDisplay.COLOR_STRIP,
     val showDescription: Boolean = true
 )
