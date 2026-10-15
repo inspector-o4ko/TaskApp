@@ -10,6 +10,7 @@ import com.example.taskapp.presentation.form.TaskFormState
 import com.example.taskapp.ui.presentation.task.event.EditTaskEvent
 import com.example.taskapp.ui.presentation.task.state.EditTaskUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,10 +18,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class EditTaskViewModel @Inject constructor(
@@ -29,18 +32,13 @@ class EditTaskViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val taskId: Long =
-        checkNotNull(
-            savedStateHandle.get<String>("taskId")
-        ).toLong()
-
+        checkNotNull(savedStateHandle.get<String>("taskId")).toLong()
 
     private val _uiState = MutableStateFlow(EditTaskUiState())
-
     val uiState = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<EditTaskEvent>()
-
-    val events = _events.asSharedFlow()
+    private val _events = Channel<EditTaskEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
 
     private var loadedTask: Task? = null
 
@@ -51,61 +49,39 @@ class EditTaskViewModel @Inject constructor(
     private fun loadTask() {
         viewModelScope.launch {
             val task = repository.getTask(taskId).first()
-            if (task != null) {
-                loadedTask = task
-                _uiState.update {
-                    it.copy(
-                        form = TaskFormState(
-                            title = task.title,
-                            description = task.description,
-                            priority = task.priority
-                        ),
-                        isLoading = false
-                    )
-                }
-            } else {
-                _events.emit(EditTaskEvent.Error("Task not found"))
+            if (task == null) {
+                _events.send(EditTaskEvent.TaskNotFound)
+                return@launch
+            }
+            loadedTask = task
+            _uiState.update {
+                it.copy(
+                    form = TaskFormState(
+                        title = task.title,
+                        description = task.description,
+                        priority = task.priority
+                    ),
+                    isLoading = false
+                )
             }
         }
     }
 
-    fun onPriorityChange(priority: TaskPriority) {
+    fun onTitleChange(title: String) =
+        _uiState.update { it.copy(form = it.form.copy(title = title)) }
+
+    fun onDescriptionChange(description: String) =
+        _uiState.update { it.copy(form = it.form.copy(description = description)) }
+
+    fun onPriorityChange(priority: TaskPriority) =
         _uiState.update { it.copy(form = it.form.copy(priority = priority)) }
-    }
-
-    fun onTitleChange(title: String) {
-        _uiState.update {
-            it.copy(
-                form = it.form.copy(
-                    title = title
-                )
-            )
-        }
-    }
-
-    fun onDescriptionChange(description: String) {
-        _uiState.update {
-            it.copy(
-                form = it.form.copy(
-                    description = description
-                )
-            )
-        }
-    }
 
     fun save() {
-
-        if (_uiState.value.isSaving) return
-
         val state = _uiState.value
-
         val original = loadedTask ?: return
+        if (state.isSaving || state.form.title.isBlank()) return
 
-        if (state.form.title.isBlank()) return
-
-        _uiState.update {
-            it.copy(isSaving = true)
-        }
+        _uiState.update { it.copy(isSaving = true) }
 
         viewModelScope.launch {
             try {
@@ -116,21 +92,13 @@ class EditTaskViewModel @Inject constructor(
                         priority = state.form.priority
                     )
                 )
-
-                _events.emit(
-                    EditTaskEvent.TaskUpdated
-                )
+                _events.send(EditTaskEvent.TaskUpdated)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                _events.send(EditTaskEvent.Error(e.message ?: "Failed to update task"))
+            } finally {
                 _uiState.update { it.copy(isSaving = false) }
-                _events.emit(
-                    EditTaskEvent.Error(
-                        e.message ?: "Failed to update task"
-                    )
-                )
-            }finally {
-                _uiState.update {
-                    it.copy(isSaving = false)
-                }
             }
         }
     }

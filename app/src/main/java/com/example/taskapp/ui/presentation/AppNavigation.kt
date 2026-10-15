@@ -127,7 +127,7 @@ fun AppNavigation(settingsViewModel: SettingsViewModel) {
             composable(Routes.TASKS) { entry ->
                 TaskListScreen(
                     uiState = uiState,
-                    taskLayout = settings!!.taskLayout,
+                    taskLayout = settings?.taskLayout ?: TaskLayout.LIST,
                     searchQuery = searchQuery,
                     onSearchQueryChange = viewModel::updateSearchQuery,
                     taskFilter = taskFilter,

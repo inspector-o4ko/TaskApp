@@ -57,15 +57,9 @@ fun EditTaskScreen(
 
         viewModel.events.collect { event ->
             when (event) {
-                EditTaskEvent.TaskUpdated -> {
-                    onBack()
-                }
-
-                is EditTaskEvent.Error -> {
-                    snackbarHostState.showSnackbar(
-                        event.message
-                    )
-                }
+                EditTaskEvent.TaskUpdated,
+                EditTaskEvent.TaskNotFound -> onBack()
+                is EditTaskEvent.Error -> snackbarHostState.showSnackbar(event.message)
             }
         }
     }

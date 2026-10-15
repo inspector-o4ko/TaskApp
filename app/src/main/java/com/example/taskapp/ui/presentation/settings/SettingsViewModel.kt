@@ -22,8 +22,8 @@ class SettingsViewModel @Inject constructor(
     val settings: StateFlow<AppSettings?> =
         repository.settings.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppSettings()
+            started = SharingStarted.Eagerly,
+            initialValue = null
         )
 
     fun updateTheme(theme: AppTheme) {

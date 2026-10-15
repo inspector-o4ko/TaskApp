@@ -4,10 +4,8 @@
 
     <application
         android:name=".TaskApplication"
-        android:exported="true"
         android:label="@string/app_name"
         android:theme="@style/Theme.TaskApp.Starting"
-        android:windowSoftInputMode="adjustResize"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

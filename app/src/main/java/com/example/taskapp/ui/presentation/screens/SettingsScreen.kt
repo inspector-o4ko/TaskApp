@@ -82,7 +82,7 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            SettingsSection(title = stringResource(R.string.settings_thema)) {
+            SettingsSection(title = stringResource(R.string.settings_theme)) {
                 ThemeSwitch(
                     isDark = isDark,
                     onToggle = { dark, origin ->
