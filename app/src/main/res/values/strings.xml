@@ -21,4 +21,5 @@
     <string name="settings_follow_system_desc">Use Android system settings</string>
     <string name="collapse_description">collapse description</string>
     <string name="expand_description">expand description</string>
+    <string name="refresh_settings">Reset settings</string>
 </resources>

@@ -1,8 +1,8 @@
 package com.example.taskapp.ui.presentation.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,8 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import com.example.taskapp.ui.presentation.components.SettingsSection
 import com.example.taskapp.ui.presentation.components.ThemeSwitch
 import com.example.taskapp.R
 import com.example.taskapp.ui.presentation.components.IconToggleSwitch
+import com.example.taskapp.ui.presentation.components.ResetSettingsDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +58,8 @@ fun SettingsScreen(
 
     var followSwitchCenter by remember { mutableStateOf(Offset.Zero) }
 
+    var showResetDialog by remember { mutableStateOf(false) }
+
     fun changeTheme(newTheme: AppTheme, origin: Offset) {
         val newDark = when (newTheme) {
             AppTheme.SYSTEM -> systemDark
@@ -72,7 +76,19 @@ fun SettingsScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_settings)) }) }
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tab_settings)) },
+                actions = {
+                    IconButton(onClick = { showResetDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.refresh_settings)
+                        )
+                    }
+                }
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -131,5 +147,14 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+    if (showResetDialog) {
+        ResetSettingsDialog(
+            onConfirm = {
+                showResetDialog = false
+                onResetSettings()
+            },
+            onDismiss = { showResetDialog = false }
+        )
     }
 }
